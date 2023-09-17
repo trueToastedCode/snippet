@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Input Box</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            font-family: roboto, "Noto Sans Myanmar UI", arial, sans-serif;
+            transition: all 150ms ease;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        :root {
+            --inp-box-hor-pad: 15px;
+            --color-focus: rgb(56, 113, 224);
+        }
+
+        .inp-box {
+           position: relative;
+           height: 56px;
+           width: min(100%, 368px);
+           margin-top: 5px;
+        }
+
+        .inp-box-input {
+            background-color: transparent;
+            outline: none;
+            border: none;
+            padding: 13px var(--inp-box-hor-pad);
+            font-size: 16px;
+            font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;
+            float: left;
+            width: inherit;
+            height: inherit;
+        }
+
+        .inp-box-border,
+        .inp-box-placeholder {
+            position: absolute;
+            pointer-events: none;
+            color: #5f6368;
+            left: 0;
+        }
+
+        .inp-box-border {
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            width: inherit;
+            height: inherit;
+            top: 0;
+            transition: clip-path calc(150ms * 0.66) ease,
+                        border 150ms ease;
+        }
+
+        .inp-box-placeholder {
+            transform-origin: 0 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            top: 50%;
+            transform: translate(0, -50%);
+            left: var(--inp-box-hor-pad);
+            max-width: calc(100% - var(--inp-box-hor-pad) * 2);
+            font-size: 16px;
+        }
+
+        .inp-box input:focus ~ .inp-box-placeholder,
+        .inp-box input:not(:placeholder-shown) ~ .inp-box-placeholder {
+            top: 0;
+            transform: scale(0.75) translate(0, -9px);
+        }
+
+        .inp-box input:focus ~ .inp-box-placeholder {
+            color: var(--color-focus);
+        }
+
+        .inp-box input:focus ~ .inp-box-border {
+            border: 2px solid var(--color-focus);
+        }
+    </style>
+</head>
+<body>
+    <div id="inp-box-0" class="inp-box">
+        <input class="inp-box-input" type="text" placeholder="‎">
+        <span class="inp-box-border"></span>
+        <span class="inp-box-placeholder">E-Mail oder Telefonnummer</span>
+    </div>
+    <script>
+        const padLeft = 15;
+        const top2 = 2;
+        const extraPad = 5;
+        const left1 = padLeft - extraPad;
+        let i = 0;
+        let inpEle = document.querySelector(`#inp-box-${i} .inp-box-input`);
+        while (inpEle != null) {
+            const _inpEle = inpEle;
+            const inpBorderEleB = document.querySelector(`#inp-box-${i} .inp-box-border`);        
+            const inpPlaceHoEleB = document.querySelector(`#inp-box-${i} .inp-box-placeholder`);
+            let state = 0;
+            const clipBorder = () => {
+                const width = (inpPlaceHoEleB.clientWidth) * 0.75;
+                const left2 = left1 + width + extraPad * 2;
+                inpBorderEleB.style.clipPath = `polygon(
+                    0% 0%,
+                    ${left1}px 0%,
+                    ${left1}px ${top2}px,
+                    ${left2}px ${top2}px,
+                    ${left2}px 0%,
+                    100% 0%,
+                    100% 100%,
+                    0% 100%
+                )`;
+                state = 1;
+            }
+            const resetBorder = () => {
+                const width = (inpPlaceHoEleB.clientWidth) * 0.75;
+                const left = left1 + (width + extraPad * 2) / 2;
+                inpBorderEleB.style.clipPath = `polygon(
+                    0% 0%,
+                    ${left}px 0%,
+                    ${left}px ${top2}px,
+                    ${left}px ${top2}px,
+                    ${left}px 0%,
+                    100% 0%,
+                    100% 100%,
+                    0% 100%
+                )`;
+                state = 0;
+            }
+            inpEle.addEventListener('focus', clipBorder);
+            inpEle.addEventListener('blur', () => {
+                if (_inpEle.value.length !== 0) {
+                    return;
+                }
+                resetBorder();
+            });
+            inpEle.value.length !== 0 ? clipBorder() : resetBorder();
+            let isFirstResize = true;
+            new ResizeObserver(() => {
+                if (isFirstResize) {
+                    isFirstResize = false;
+                    return;
+                }
+                state === 0 ? resetBorder() : clipBorder();
+            }).observe(_inpEle);
+            i++;
+            inpEle = document.querySelector(`#inp-box-${i} input`);
+        }
+    </script>
+</body>
+</html>
