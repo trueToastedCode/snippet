@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ripple Effect</title>
+    <style>
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+
+        .my-btn {
+            position: relative;
+            padding: 0 8px;
+            background-color: transparent;
+            border: none;
+            height: 24px;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .my-btn::before {
+            content: "";
+            position: absolute;
+            background-color: lightgrey;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            z-index: -1;
+        }
+
+        .my-btn:hover::after {
+            content: "";
+            position: absolute;
+            background-color: black;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .ripple-effect {
+            position: absolute;
+            background: black;
+            clip-path: circle(0);
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
+    </style>
+</head>
+<body>
+    <button class="my-btn">
+        Hello
+        <span class="ripple-effect"></span>
+    </button>
+    <script>
+        document.querySelectorAll('.my-btn').forEach(el => {
+            const elRipple = el.querySelector('.ripple-effect');
+            let isMouseUp = true,
+                isAutoClear = false,
+                isResetDone = true,
+                rippleStart = -1;
+            const doRippleEffect = (e) => {
+                const r = el.getBoundingClientRect(),
+                    halfW = r.width / 2,
+                    halfH = r.height / 2,
+                    right = r.width - e.layerX,
+                    bottom = r.height - e.layerY,
+                    halfRippleW = e.layerX < halfW ? right : e.layerX,
+                    halfRippleH = e.layerY < halfH ? bottom : e.layerY,
+                    radius = Math.sqrt(
+                        Math.pow(e.layerX > halfW ? e.layerX: right, 2) + 
+                        Math.pow(e.layerY > halfH ? e.layerY: bottom, 2)
+                    );
+                elRipple.style.opacity = 0.2;
+                elRipple.style.width = `${halfRippleW * 2}px`;
+                elRipple.style.height = `${halfRippleH * 2}px`;
+                elRipple.style.left = `${e.layerX - halfRippleW}px`;
+                elRipple.style.top = `${e.layerY - halfRippleH}px`;
+                elRipple.style.clipPath = `circle(${radius}px)`;
+                elRipple.style.transition = `clip-path 200ms ease`;
+                isAutoClear = true;
+                isResetDone = false;
+                isMouseUp = false;
+                rippleStart = Date.now();
+                const currentRippleStart = rippleStart;
+                setTimeout(() => {
+                    if (currentRippleStart !== rippleStart) return;
+                    isAutoClear = false;
+                    if (isMouseUp) fadeRippleEffectOut();
+                }, 200);
+            }
+            const fadeRippleEffectOut = () => {
+                elRipple.style.animation = 'fadeOut 300ms';
+            }
+            const resetRippleEffect = () => {
+                elRipple.style.animation = '';
+                elRipple.style.opacity = 0;
+                elRipple.style.clipPath = 'circle(0)';
+                elRipple.style.transition = '';
+                isResetDone = true;
+            }
+            el.addEventListener('mousedown', e => {
+                if (!isResetDone) resetRippleEffect();
+                doRippleEffect(e);
+            });
+            el.addEventListener('mouseup', _ => {
+                isMouseUp = true;
+                if (!isAutoClear) fadeRippleEffectOut();
+            });
+            elRipple.addEventListener(
+                'animationend', () => resetRippleEffect()
+            );
+        });
+    </script>
+</body>
+</html>
