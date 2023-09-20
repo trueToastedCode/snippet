@@ -58,6 +58,9 @@
         <span class="ripple-effect"></span>
     </button>
     <script>
+        const rippleEffectLen = 200,
+              rippleEffectFadeOutLen = 300,
+              rippleEffectOpacity = 0.2;
         document.querySelectorAll('.my-btn').forEach(el => {
             const elRipple = el.querySelector('.ripple-effect');
             let isMouseUp = true,
@@ -76,13 +79,13 @@
                         Math.pow(e.layerX > halfW ? e.layerX: right, 2) + 
                         Math.pow(e.layerY > halfH ? e.layerY: bottom, 2)
                     );
-                elRipple.style.opacity = 0.2;
+                elRipple.style.opacity = rippleEffectOpacity;
                 elRipple.style.width = `${halfRippleW * 2}px`;
                 elRipple.style.height = `${halfRippleH * 2}px`;
                 elRipple.style.left = `${e.layerX - halfRippleW}px`;
                 elRipple.style.top = `${e.layerY - halfRippleH}px`;
                 elRipple.style.clipPath = `circle(${radius}px)`;
-                elRipple.style.transition = `clip-path 200ms ease`;
+                elRipple.style.transition = `clip-path ${rippleEffectLen}ms ease`;
                 isAutoClear = true;
                 isResetDone = false;
                 isMouseUp = false;
@@ -92,10 +95,10 @@
                     if (currentRippleStart !== rippleStart) return;
                     isAutoClear = false;
                     if (isMouseUp) fadeRippleEffectOut();
-                }, 200);
+                }, rippleEffectLen);
             }
             const fadeRippleEffectOut = () => {
-                elRipple.style.animation = 'fadeOut 300ms';
+                elRipple.style.animation = `fadeOut ${rippleEffectFadeOutLen}ms`;
             }
             const resetRippleEffect = () => {
                 elRipple.style.animation = '';
@@ -112,9 +115,7 @@
                 isMouseUp = true;
                 if (!isAutoClear) fadeRippleEffectOut();
             });
-            elRipple.addEventListener(
-                'animationend', () => resetRippleEffect()
-            );
+            elRipple.addEventListener('animationend', resetRippleEffect);
         });
     </script>
 </body>
